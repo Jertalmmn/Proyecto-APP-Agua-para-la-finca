@@ -1,6 +1,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY ["Proyecto Agua para la Finca/", "./"]
+
+# Copia absolutamente todos los archivos y carpetas
+COPY . .
+
+# Compila el proyecto directamente
 RUN dotnet publish "Proyecto Agua para la Finca.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
