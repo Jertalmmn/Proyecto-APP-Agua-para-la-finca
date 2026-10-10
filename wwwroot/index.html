@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosecha de Lluvia Guanacaste - CEMEDE UNA</title>
+
+    <!-- ICONO DE LA APLICACIÓN (PWA & NAVEGADOR) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+    <link rel="apple-touch-icon" href="img/icon-192.png">
+    <meta name="theme-color" content="#065f46">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-cover bg-center bg-fixed min-h-screen text-slate-800 font-sans relative"
+      style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop');">
+
+    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
+
+    <div class="relative z-10 pb-12">
+        <!-- ENCABEZADO INSTITUCIONAL -->
+        <header class="bg-emerald-900/90 text-white backdrop-blur-md shadow-lg border-b border-emerald-700/50">
+            <div class="max-w-6xl mx-auto p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="bg-white p-2 rounded-xl shadow-md border border-white/20 flex items-center justify-center">
+                        <img src="img/icon-192.png" alt="UNA Logo" class="h-10 w-10 object-contain" onError="this.style.display='none'; document.getElementById('altLogo').style.display='block';">
+                        <span id="altLogo" class="hidden text-red-700 font-black text-xl px-1">UNA</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider bg-red-600 px-2 py-0.5 rounded text-white shadow-sm">UNA</span>
+                            <span class="text-xs font-semibold uppercase tracking-wider bg-emerald-700 px-2 py-0.5 rounded text-emerald-100 border border-emerald-500/40">CEMEDE</span>
+                            <span id="badgeConfianza" class="text-[10px] font-bold uppercase tracking-wider bg-blue-600 px-2 py-0.5 rounded text-white shadow-sm" title="Origen de los datos agroclimáticos">Confianza: B (Oficial Local)</span>
+                        </div>
+                        <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white mt-1">
+                            Cosecha de Lluvia Guanacaste
+                        </h1>
+                        <p class="text-xs text-emerald-200">Centro Mesoamericano de Desarrollo Sostenible del Trópico Seco</p>
+                    </div>
+                </div>
+                <div class="text-right hidden md:block">
+                    <span class="text-xs font-medium bg-emerald-950/60 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-600/40 flex items-center gap-1.5">
+                        <i data-lucide="sprout" class="w-3.5 h-3.5 text-emerald-400"></i> Sistema Integral de Finca Sostenible
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+
+            <!-- PANEL INTERACTIVO DE PARÁMETROS -->
+            <section class="lg:col-span-1 bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 space-y-4">
+
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <span class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">Configuración</span>
+                        <h2 class="text-lg font-bold text-slate-900">Parámetros de Finca</h2>
+                    </div>
+                    <!-- INTERRUPTOR MODO TÉCNICO -->
+                    <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                        <span class="text-[10px] font-bold text-slate-600 pl-1">Técnico</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="checkModoTecnico" class="sr-only peer">
+                            <div class="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-700"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <form id="calcForm" class="space-y-4" onsubmit="return false;">
+
+                    <!-- UBICACIÓN Y ESCENARIO CLIMÁTICO -->
+                    <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80 space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">Nombre de la finca</label>
+                            <input type="text" id="nombreFinca" value="Finca piloto" class="w-full p-2.5 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-800 mb-1">Cantón</label>
+                                <select id="canton" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                                    <option value="nicoya">Nicoya</option>
+                                    <option value="hojancha">Hojancha</option>
+                                    <option value="liberia">Liberia</option>
+                                    <option value="santa_cruz">Santa Cruz</option>
+                                    <option value="bagaces">Bagaces</option>
+                                    <option value="carrillo">Carrillo</option>
+                                    <option value="canas">Cañas</option>
+                                    <option value="abangares">Abangares</option>
+                                    <option value="tilaran">Tilarán</option>
+                                    <option value="nandayure">Nandayure</option>
+                                    <option value="la_cruz">La Cruz</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-800 mb-1">Distrito</label>
+                                <select id="distrito" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-emerald-800 mb-1">Escenario de Precipitación</label>
+                            <select id="escenarioClima" class="w-full p-2 border border-emerald-300 bg-emerald-50/60 rounded-xl text-xs font-bold text-emerald-900 outline-none cursor-pointer">
+                                <option value="tipico" selected>Año Típico (Promedio histórico)</option>
+                                <option value="seco">Año Seco (Sequía / El Niño -25%)</option>
+                                <option value="humedo">Año Húmedo (La Niña +20%)</option>
+                            </select>
+                        </div>
+
+                        <button type="button" id="btnUbicacion" class="w-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold p-2 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i> Usar mi ubicación GPS
+                        </button>
+                    </div>
+
+                    <!-- CAPTACIÓN & TANQUE BASE -->
+                    <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80 space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-800 mb-1">Techo (m²)</label>
+                                <input type="number" id="areaTecho" value="150" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-800 mb-1">Tanque (m³)</label>
+                                <input type="number" id="capacidadTanque" value="10" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">Material de Cubierta</label>
+                            <select id="material" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+                                <option value="0.90">Lámina de Zinc (C = 0.90)</option>
+                                <option value="0.85">Plástico Agrícola (C = 0.85)</option>
+                                <option value="0.92">Geomembrana (C = 0.92)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- GEOMETRÍA RESERVORIO (MODO TÉCNICO) -->
+                    <div id="panelGeometriaTecnica" class="hidden bg-teal-50/60 p-3.5 rounded-2xl border border-teal-200 space-y-3">
+                        <span class="block text-[10px] font-extrabold text-teal-800 uppercase tracking-widest">¿Cómo es su reservorio?</span>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Forma del reservorio</label>
+                            <select id="formaReservorio" class="w-full p-1.5 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                <option value="rect_vert">Rectangular · paredes verticales</option>
+                                <option value="rect_talud">Rectangular · con talud H:V</option>
+                                <option value="circular">Cilíndrico circular</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-700">Largo fondo (m)</label>
+                                <input type="number" id="largoFondo" value="5" step="0.1" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-700">Ancho fondo (m)</label>
+                                <input type="number" id="anchoFondo" value="4" step="0.1" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white text-xs">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-700">Profundidad (m)</label>
+                                <input type="number" id="profundidadTotal" value="2" step="0.1" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-700">Borde libre (m)</label>
+                                <input type="number" id="bordeLibre" value="0.4" step="0.1" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white text-xs">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-700">Zona muerta (m)</label>
+                                <input type="number" id="zonaMuerta" value="0.2" step="0.05" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-700">Talud H:V</label>
+                                <input type="number" id="taludHV" value="1.5" step="0.1" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white text-xs">
+                            </div>
+                        </div>
+
+                        <div class="bg-teal-900 text-white p-3 rounded-xl space-y-1 shadow-inner">
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-[10px] font-semibold text-teal-200">Volumen útil calculado</span>
+                                <span id="lblVolumenUtilM3" class="text-base font-black text-emerald-300">74,28 m³</span>
+                            </div>
+                            <p id="lblDetalleVolumen" class="text-[9px] text-teal-100 leading-tight">
+                                Útil = Almacenamiento - zona muerta = 74.284 L. Espejo al nivel normal: 86,24 m².
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- HIDRÁULICA Y CANALETAS (MODO TÉCNICO) -->
+                    <div id="panelCaptacionTecnica" class="hidden bg-slate-100 p-3.5 rounded-2xl border border-slate-300 space-y-2 text-xs">
+                        <span class="block text-[10px] font-extrabold text-slate-700 uppercase tracking-widest">Infraestructura y Canaletas</span>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-600">Intensidad IDF (mm/h)</label>
+                                <input type="number" id="intensidadIDF" value="100" class="w-full p-1.5 border rounded bg-white text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-600">Primer lavado (mm)</label>
+                                <input type="number" id="primerLavado" value="1" step="0.5" class="w-full p-1.5 border rounded bg-white text-xs">
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800 text-slate-100 p-2.5 rounded-xl flex justify-between items-center">
+                            <span class="text-[10px]">Caudal Pico Requerido:</span>
+                            <span id="lblCaudalPico" class="font-bold text-amber-400">4,17 L/s</span>
+                        </div>
+                    </div>
+
+                    <!-- TARJETA 1: ANIMALES Y SERVICIOS -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm transition-all duration-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                                    <i data-lucide="beef" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-900">Animales y Servicios</h3>
+                                    <p class="text-[11px] text-slate-400">Bebida + Agua de Limpieza</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="checkAnimales" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-700"></div>
+                                <span id="lblAnimales" class="ml-2 text-xs font-bold text-teal-800">Sí</span>
+                            </label>
+                        </div>
+
+                        <div id="seccionAnimales" class="mt-4 pt-3 border-t border-slate-100 space-y-3">
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="col-span-2">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Tipo de animal</label>
+                                    <select id="tipoGanado" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+                                        <option value="bovino_leche">Bovino - Leche</option>
+                                        <option value="bovino_carne" selected>Bovino - Carne/Engorde</option>
+                                        <option value="bovino_toro">Bovino - Toro Reproductor</option>
+                                        <option value="porcino_engorde">Porcino - Engorde</option>
+                                        <option value="equino">Equino - Caballo/Mula</option>
+                                        <option value="ovino_caprino">Ovinos / Caprinos</option>
+                                        <option value="avicola_100">Avícola (100 Aves)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Cantidad</label>
+                                    <input type="number" id="cabezasBovinos" value="10" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Agua de Limpieza / Corral (L/día)</label>
+                                <input type="number" id="aguaLimpieza" value="50" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                            </div>
+
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                                <span class="block text-[10px] font-bold text-slate-500 uppercase">Dotación oficial de bebida</span>
+                                <div class="flex items-baseline justify-between mt-0.5">
+                                    <span id="lblDotacionOficial" class="text-sm font-black text-slate-800">50</span>
+                                    <span class="text-xs text-slate-500 font-semibold">L/animal/día</span>
+                                </div>
+                                <p class="text-[9px] text-slate-400 mt-1">Manual Técnico de Dotaciones, Dirección de Agua.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TARJETA 2: CULTIVO Y RIEGO (FAO-56) -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm transition-all duration-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                                    <i data-lucide="sprout" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-900">Cultivo y Riego</h3>
+                                    <p class="text-[11px] text-slate-400">Fenología FAO-56</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="checkCultivo" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-700"></div>
+                                <span id="lblCultivo" class="ml-2 text-xs font-bold text-teal-800">Sí</span>
+                            </label>
+                        </div>
+
+                        <div id="seccionCultivo" class="mt-4 pt-3 border-t border-slate-100 space-y-3">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Cultivo</label>
+                                    <select id="tipoCultivo" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+                                        <option value="maiz">Maíz dulce</option>
+                                        <option value="melon">Melón / Sandía</option>
+                                        <option value="pasto">Pasto / Forraje</option>
+                                        <option value="hortalizas">Hortalizas varias</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Área a regar</label>
+                                    <div class="relative">
+                                        <input type="number" id="areaCultivo" value="1000" class="w-full p-2 pr-7 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                        <span class="absolute right-2 top-2 text-xs text-slate-400 font-bold">m²</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Etapa de cultivo</label>
+                                    <select id="etapaFenologica" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+                                        <option value="inicial">Inicial (Kc = 0.40)</option>
+                                        <option value="desarrollo">Desarrollo (Kc = 0.80)</option>
+                                        <option value="media" selected>Media Estación (Kc = 1.15)</option>
+                                        <option value="final">Final / Maduración (Kc = 0.60)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Sistema de riego</label>
+                                    <select id="sistemaRiego" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+                                        <option value="0.85">Aspersión · 85%</option>
+                                        <option value="0.90">Goteo · 90%</option>
+                                        <option value="0.75">Gravedad · 75%</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TARJETA 3: ESTANQUE DE AZOLLA -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm transition-all duration-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                                    <i data-lucide="droplets" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-900">Estanque de Azolla</h3>
+                                    <p class="text-[11px] text-slate-400">Reposición y Temperatura</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="checkAzolla" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-700"></div>
+                                <span id="lblAzolla" class="ml-2 text-xs font-bold text-slate-400">No</span>
+                            </label>
+                        </div>
+
+                        <div id="seccionAzolla" class="mt-4 pt-3 border-t border-slate-100 hidden space-y-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Área Estanque (m²)</label>
+                                    <input type="number" id="areaAzolla" value="20" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Temp. Agua (°C)</label>
+                                    <input type="number" id="tempAguaAzolla" value="32" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                </div>
+                            </div>
+                            <p id="lblAlertaAzolla" class="text-[10px] text-amber-700 font-semibold hidden">
+                                ⚠️ Alerta: Temp. agua &gt; 35°C reduce la fijación de nitrógeno. Instalar mallasombra.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- PROYECCIÓN Y BOTÓN CONTINUAR -->
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-900 mb-1">Horizonte de Proyección</label>
+                        <select id="rangoAnios" class="w-full p-2 border border-emerald-300 bg-emerald-50/50 rounded-xl text-xs font-bold text-emerald-900 outline-none cursor-pointer">
+                            <option value="1">1 Año (12 meses)</option>
+                            <option value="2">2 Años (24 meses)</option>
+                            <option value="3">3 Años (36 meses)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <button type="button" id="btnCalcular" class="w-full bg-teal-800 hover:bg-teal-900 text-white font-bold p-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm">
+                            Calcular Balance <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- PANEL DE RESULTADOS Y MÉTRICAS AMPLIADAS -->
+            <section class="lg:col-span-2 space-y-5">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-white/50">
+                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Captación Anual</p>
+                        <h3 id="resCaptacion" class="text-xl font-black text-emerald-700 mt-0.5">0 L</h3>
+                    </div>
+                    <div class="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-white/50">
+                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Demanda Diaria</p>
+                        <h3 id="resDemandaDiaria" class="text-xl font-black text-blue-700 mt-0.5">0 L/día</h3>
+                    </div>
+                    <div class="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-white/50">
+                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Confiabilidad</p>
+                        <h3 id="resConfiabilidad" class="text-xl font-black text-teal-700 mt-0.5">100%</h3>
+                    </div>
+                    <div class="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-white/50">
+                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Agua Derramada</p>
+                        <h3 id="resAguaDerramada" class="text-xl font-black text-rose-600 mt-0.5">0 L</h3>
+                    </div>
+                </div>
+
+                <div id="alertBox" class="p-3.5 rounded-2xl border bg-emerald-50/95 border-emerald-300 text-emerald-900 shadow-md backdrop-blur-md flex items-center gap-3">
+                    <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0 text-emerald-600"></i>
+                    <p id="alertMessage" class="text-xs font-semibold">Excelente balance: La reserva del tanque cubre la demanda requerida.</p>
+                </div>
+
+                <div class="bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50">
+                    <h3 id="tituloGrafico" class="text-sm font-bold text-slate-900 border-b border-slate-200 pb-2 mb-3 flex items-center gap-2">
+                        <i data-lucide="line-chart" class="text-emerald-700"></i> Proyección del Tanque
+                    </h3>
+                    <div class="relative w-full h-72">
+                        <canvas id="chartBalance"></canvas>
+                    </div>
+                </div>
+
+                <!-- DESGLOSE DETALLADO DE AUDITORÍA -->
+                <div class="bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50">
+                    <h3 class="text-sm font-bold text-slate-900 border-b border-slate-200 pb-2 mb-3">Detalle del Balance e Indicadores Técnicos</h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">Bebida Animal + Servicios de Limpieza:</span>
+                            <span id="detGanado" class="font-bold text-slate-800">0 L/día</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">Riego de Cultivo (Ajuste FAO-56):</span>
+                            <span id="detCultivo" class="font-bold text-slate-800">0 L/día</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">Reposición Estanque Azolla:</span>
+                            <span id="detAzolla" class="font-bold text-slate-800">0 L/día</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100 bg-emerald-50/50 px-2 rounded">
+                            <span class="text-emerald-900 font-bold">Área Máxima de Cultivo Abastecible con esta Agua:</span>
+                            <span id="detAreaMax" class="font-black text-emerald-700">0 m²</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="text-slate-600 font-medium">Capacidad Total Utilizable del Tanque:</span>
+                            <span id="detTanque" class="font-bold text-slate-800">0 Litros</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="js/calculator.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+                lucide.createIcons();
+    </script>
+</body>
+</html>
