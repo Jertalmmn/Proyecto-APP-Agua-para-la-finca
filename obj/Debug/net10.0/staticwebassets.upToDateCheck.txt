@@ -1,0 +1,8 @@
+wwwroot\img\icon-192.png
+wwwroot\img\logo_una.png
+wwwroot\index.html
+wwwroot\js\app.js
+wwwroot\js\calculator.js
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\wwwroot\index.html
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\wwwroot\js\app.js
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\wwwroot\js\calculator.js

@@ -22,12 +22,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    selectCanton.addEventListener('change', actualizarDistritos);
+    selectCanton.addEventListener('change', () => {
+        actualizarDistritos();
+        ejecutarCalculo();
+    });
+
+    selectDistrito.addEventListener('change', ejecutarCalculo);
+
     actualizarDistritos();
 
     btnCalcular.addEventListener('click', ejecutarCalculo);
 
     document.getElementById('escenarioClima').addEventListener('change', ejecutarCalculo);
+    document.getElementById('areaTecho').addEventListener('input', ejecutarCalculo);
+    document.getElementById('capacidadTanque').addEventListener('input', ejecutarCalculo);
+    document.getElementById('material').addEventListener('change', ejecutarCalculo);
+    document.getElementById('rangoAnios').addEventListener('change', ejecutarCalculo);
 
     document.getElementById('tempAguaAzolla').addEventListener('input', (e) => {
         const temp = parseFloat(e.target.value) || 0;
@@ -55,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarDistritos();
                 ejecutarCalculo();
             },
-            () => { alert("No se pudo obtener la ubicación."); },
+            () => { alert("No se pudo obtener la ubicación GPS."); },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     });
@@ -106,7 +116,7 @@ function setupModoTecnico() {
     const panelGeo = document.getElementById('panelGeometriaTecnica');
     const panelCap = document.getElementById('panelCaptacionTecnica');
 
-    const inputsTecnicos = ['formaReservorio', 'largoFondo', 'anchoFondo', 'profundidadTotal', 'bordeLibre', 'zonaMuerta', 'taludHV', 'intensidadIDF'];
+    const inputsTecnicos = ['formaReservorio', 'largoFondo', 'anchoFondo', 'profundidadTotal', 'bordeLibre', 'zonaMuerta', 'taludHV', 'intensidadIDF', 'primerLavado'];
 
     checkTecnico.addEventListener('change', () => {
         const activo = checkTecnico.checked;
@@ -293,4 +303,83 @@ function renderGraficoMultilinea(res) {
             }
         }
     });
+}
+
+// Función para descargar informe en PDF
+async function generarInformePDF() {
+    if (!window.jspdf) {
+        alert("El módulo de PDF aún se está cargando, reintenta en un momento...");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    const nombreFinca = document.getElementById('nombreFinca')?.value || "Finca";
+    const selectCanton = document.getElementById('canton');
+    const selectDistrito = document.getElementById('distrito');
+
+    const cantonText = selectCanton.options[selectCanton.selectedIndex]?.text || "N/A";
+    const distritoText = selectDistrito.options[selectDistrito.selectedIndex]?.text || "N/A";
+
+    // Encabezado
+    doc.setFillColor(6, 95, 70);
+    doc.rect(0, 0, 210, 25, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(15);
+    doc.setFont("helvetica", "bold");
+    doc.text("REPORTE TÉCNICO DE BALANCE HÍDRICO", 14, 16);
+
+    // Datos generales
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-CR')}`, 14, 33);
+    doc.text(`Finca: ${nombreFinca}`, 14, 39);
+    doc.text(`Ubicación: Cantón de ${cantonText}, Distrito de ${distritoText}`, 14, 45);
+
+    // Resumen de Métricas
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(14, 52, 182, 22, 3, 3, 'F');
+    doc.setTextColor(6, 95, 70);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("CAPTACIÓN ANUAL ESTIMADA:", 18, 60);
+    doc.setFontSize(13);
+    doc.text(document.getElementById('resCaptacion')?.innerText || "0 L", 18, 68);
+
+    doc.setFontSize(10);
+    doc.text("CONFIABILIDAD DEL SISTEMA:", 110, 60);
+    doc.setFontSize(13);
+    doc.text(document.getElementById('resConfiabilidad')?.innerText || "0%", 110, 68);
+
+    // Detalle
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Detalle del Balance e Indicadores", 14, 83);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`• Bebida Animal + Limpieza: ${document.getElementById('detGanado')?.innerText || '0 L/día'}`, 18, 91);
+    doc.text(`• Riego de Cultivo (Ajuste FAO-56): ${document.getElementById('detCultivo')?.innerText || '0 L/día'}`, 18, 97);
+    doc.text(`• Reposición Estanque Azolla: ${document.getElementById('detAzolla')?.innerText || '0 L/día'}`, 18, 103);
+    doc.text(`• Área Máxima de Cultivo Abastecible: ${document.getElementById('detAreaMax')?.innerText || '0 m²'}`, 18, 109);
+    doc.text(`• Capacidad Total del Tanque: ${document.getElementById('detTanque')?.innerText || '0 Litros'}`, 18, 115);
+
+    // Gráfica
+    const canvas = document.getElementById("chartBalance");
+    if (canvas) {
+        const img = canvas.toDataURL("image/png");
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text("Proyección del Tanque (Balance Mensual)", 14, 128);
+        doc.addImage(img, "PNG", 14, 132, 182, 85);
+    }
+
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Generado por Cosecha de Agua Guanacaste - Universidad Nacional de Costa Rica (CEMEDE)", 14, 285);
+
+    doc.save(`Informe_Agua_${nombreFinca}_${cantonText}.pdf`);
 }

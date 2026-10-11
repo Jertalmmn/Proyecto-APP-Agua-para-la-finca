@@ -7,4 +7,8 @@
     <RootNamespace>Proyecto_Agua_para_la_Finca</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="Proyecto Agua para la Finca.csproj.user" />
+  </ItemGroup>
+
 </Project>

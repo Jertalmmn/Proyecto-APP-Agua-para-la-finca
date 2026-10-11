@@ -85,7 +85,7 @@
         const perfilLluvia = this.precipitacionBase.map(mm => mm * factorClima);
 
         let capacidadTanqueL = params.capacidadTanque * 1000;
-        if (params.modoTecnico) {
+        if (params.modoTecnico && params.geometria) {
             const tec = this.calcularVolumenUtilTecnico(params.geometria);
             capacidadTanqueL = tec.volumenUtilLitros;
         }

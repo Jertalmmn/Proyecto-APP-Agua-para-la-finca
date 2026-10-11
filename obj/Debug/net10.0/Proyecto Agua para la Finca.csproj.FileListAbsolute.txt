@@ -1,0 +1,35 @@
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\appsettings.Development.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\appsettings.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\Proyecto Agua para la Finca.staticwebassets.runtime.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\Proyecto Agua para la Finca.staticwebassets.endpoints.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\Proyecto Agua para la Finca.exe
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\Proyecto Agua para la Finca.deps.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\Proyecto Agua para la Finca.runtimeconfig.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\Proyecto Agua para la Finca.dll
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\Proyecto Agua para la Finca.pdb
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.AssemblyInfoInputs.cache
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.AssemblyInfo.cs
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.csproj.CoreCompileInputs.cache
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.sourcelink.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\rjimswa.dswa.cache.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\scopedcss\bundle\Proyecto Agua para la Finca.styles.css
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\staticwebassets.build.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\staticwebassets.build.json.cache
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\staticwebassets.development.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\staticwebassets.build.endpoints.json
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\swae.build.ex.cache
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.dll
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\refint\Proyecto Agua para la Finca.dll
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.pdb
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.genruntimeconfig.cache
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\ref\Proyecto Agua para la Finca.dll
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto.1EB88998.Up2Date
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\qqdpy3wy3h-{0}-w6vzc85laj-w6vzc85laj.gz
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\y05ibz3gkf-{0}-iciu5pnfsn-iciu5pnfsn.gz
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\1ayoh0fl2c-{0}-cjtvlhiv6q-cjtvlhiv6q.gz
