@@ -23,6 +23,32 @@
         la_cruz: ["La Cruz", "Santa Cecilia", "La Garita", "Santa Elena"]
     },
 
+    // Factores de corrección climática específicos por distrito basados en estaciones IMN y Zonas de Vida (Holdridge)
+   factoresDistritosIMN: {
+    // Hojancha
+    "hojancha": 1.05, "monte_romo": 1.15, "puerto_carrillo": 0.90, "huacas": 0.95, "matambu": 1.00,
+    // Nicoya
+    "nicoya": 1.00, "mansion": 1.05, "san_antonio": 0.95, "quebrada_honda": 0.90, "samara": 0.92, "nosara": 1.20, "belen_de_nosarita": 1.05,
+    // Liberia
+    "liberia": 1.00, "canas_dulces": 1.25, "mayorga": 1.10, "nacascolo": 0.85, "curubande": 1.15,
+    // Santa Cruz
+    "santa_cruz": 1.00, "bolson": 0.95, "veintisiete_de_abril": 0.92, "tempate": 0.90, "cartagena": 0.95, "cuajiniquil": 0.88, "diria": 1.05, "cabo_velas": 0.85, "tamarindo": 0.85,
+    // Bagaces
+    "bagaces": 1.00, "la_fortuna": 1.30, "mogote": 0.95, "rio_naranjo": 1.40,
+    // Carrillo
+    "filadelfia": 1.00, "palmira": 0.98, "sardinal": 0.92, "belen": 0.95,
+    // Cañas
+    "canas": 1.00, "san_miguel": 1.05, "bebedero": 0.90, "porozal": 0.92,
+    // Abangares
+    "las_juntas": 1.10, "sierra": 1.15, "san_juan": 1.05, "colorado": 0.95,
+    // Tilarán
+    "tilaran": 1.35, "quebrada_grande": 1.40, "tronadora": 1.30, "santa_rosa": 1.25, "libano": 1.20, "tierras_morenas": 1.45, "arenal": 1.50,
+    // Nandayure
+    "carmona": 1.05, "santa_rita": 1.00, "zapotal": 1.15, "san_pablo": 1.05, "porvenir": 1.00, "bejuco": 0.95,
+    // La Cruz
+    "la_cruz": 0.95, "santa_cecilia": 1.25, "la_garita": 1.00, "santa_elena": 1.10
+},
+
     precipitacionBase: [10, 15, 25, 70, 220, 260, 180, 210, 320, 340, 140, 30],
     diasPorMes: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
     nombresMeses: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"],
@@ -41,7 +67,7 @@
         la_cruz: { lat: 11.0732, lon: -85.6322 }
     },
 
-    calcularVolumenUtilTecnico: function (p) {
+    calcularVolumenUtilTecnico: function(p) {
         const hUtil = Math.max(0, p.profundidadTotal - p.bordeLibre - p.zonaMuerta);
         let volM3 = 0;
 
@@ -63,7 +89,7 @@
         };
     },
 
-    calcularCantonCercano: function (lat, lon) {
+    calcularCantonCercano: function(lat, lon) {
         let cantonCercano = "nicoya";
         let distanciaMinima = Infinity;
 
@@ -77,12 +103,15 @@
         return cantonCercano;
     },
 
-    calcular: function (params) {
+    calcular: function(params) {
         let factorClima = 1.0;
         if (params.escenarioClima === 'seco') factorClima = 0.75;
         if (params.escenarioClima === 'humedo') factorClima = 1.20;
 
-        const perfilLluvia = this.precipitacionBase.map(mm => mm * factorClima);
+        const distKey = params.distrito || "nicoya";
+        const factorDistrito = this.factoresDistritosIMN[distKey] || 1.0;
+
+        const perfilLluvia = this.precipitacionBase.map(mm => mm * factorClima * factorDistrito);
 
         let capacidadTanqueL = params.capacidadTanque * 1000;
         if (params.modoTecnico && params.geometria) {

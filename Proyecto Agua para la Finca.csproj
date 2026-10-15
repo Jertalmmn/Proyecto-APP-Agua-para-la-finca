@@ -11,4 +11,13 @@
     <None Include="Proyecto Agua para la Finca.csproj.user" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\js\app.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\js\calculator.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

@@ -22,16 +22,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -40,10 +32,14 @@
               "RelativeDocumentMoniker": "wwwroot\\js\\calculator.js",
               "ToolTip": "C:\\Users\\WINDOWS\\Documents\\Asadas proyecto\\Proyecto agua para la finca\\Proyecto Agua para la Finca\\wwwroot\\js\\calculator.js",
               "RelativeToolTip": "wwwroot\\js\\calculator.js",
-              "ViewState": "AgIAALAAAAAAAAAAAAAmwMAAAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAALwAAAAAAAAAAAAowMwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-10-11T00:43:29.862Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
               "$type": "Document",
@@ -53,7 +49,7 @@
               "RelativeDocumentMoniker": "wwwroot\\js\\app.js",
               "ToolTip": "C:\\Users\\WINDOWS\\Documents\\Asadas proyecto\\Proyecto agua para la finca\\Proyecto Agua para la Finca\\wwwroot\\js\\app.js",
               "RelativeToolTip": "wwwroot\\js\\app.js",
-              "ViewState": "AgIAAG4BAAAAAAAAAAAmwIABAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAPABAAAAAAAAAAAowPoBAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-10-11T00:43:29.139Z",
               "EditorCaption": ""
@@ -66,7 +62,7 @@
               "RelativeDocumentMoniker": "wwwroot\\index.html",
               "ToolTip": "C:\\Users\\WINDOWS\\Documents\\Asadas proyecto\\Proyecto agua para la finca\\Proyecto Agua para la Finca\\wwwroot\\index.html",
               "RelativeToolTip": "wwwroot\\index.html",
-              "ViewState": "AgIAAMUBAAAAAAAAAAAcwNkBAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAAO0BAAAAAAAAAAAgwAYCAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2026-10-11T00:43:27.508Z",
               "EditorCaption": ""

@@ -30,6 +30,10 @@ C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto 
 C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto Agua para la Finca.genruntimeconfig.cache
 C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\ref\Proyecto Agua para la Finca.dll
 C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\Proyecto.1EB88998.Up2Date
-C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\qqdpy3wy3h-{0}-w6vzc85laj-w6vzc85laj.gz
-C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\y05ibz3gkf-{0}-iciu5pnfsn-iciu5pnfsn.gz
-C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\1ayoh0fl2c-{0}-cjtvlhiv6q-cjtvlhiv6q.gz
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\wwwroot\js\app.js
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\wwwroot\js\calculator.js
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\wwwroot\js\app.js.gz
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\bin\Debug\net10.0\wwwroot\js\calculator.js.gz
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\qqdpy3wy3h-{0}-y2j7zlf4z5-y2j7zlf4z5.gz
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\y05ibz3gkf-{0}-m456go7nh5-m456go7nh5.gz
+C:\Users\WINDOWS\Documents\Asadas proyecto\Proyecto agua para la finca\Proyecto Agua para la Finca\obj\Debug\net10.0\compressed\1ayoh0fl2c-{0}-1nnennhdcp-1nnennhdcp.gz

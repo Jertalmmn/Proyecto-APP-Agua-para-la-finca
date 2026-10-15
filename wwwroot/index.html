@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cosecha de Lluvia Guanacaste - CEMEDE UNA</title>
 
-    <!-- ICONO DE LA APLICACIÓN (PWA & NAVEGADOR) -->
+    <!-- ICONO DE LA APLICACIÓN -->
     <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
     <link rel="apple-touch-icon" href="img/icon-192.png">
     <meta name="theme-color" content="#065f46">
@@ -27,7 +27,7 @@
     <div class="relative z-10 pb-12">
         <!-- ENCABEZADO INSTITUCIONAL -->
         <header class="bg-emerald-900/90 text-white backdrop-blur-md shadow-lg border-b border-emerald-700/50">
-            <div class="max-w-6xl mx-auto p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="max-w-7xl mx-auto p-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
                     <div class="bg-white p-2 rounded-xl shadow-md border border-white/20 flex items-center justify-center">
                         <img src="img/icon-192.png" alt="UNA Logo" class="h-10 w-10 object-contain" onError="this.style.display='none'; document.getElementById('altLogo').style.display='block';">
@@ -37,7 +37,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold uppercase tracking-wider bg-red-600 px-2 py-0.5 rounded text-white shadow-sm">UNA</span>
                             <span class="text-xs font-semibold uppercase tracking-wider bg-emerald-700 px-2 py-0.5 rounded text-emerald-100 border border-emerald-500/40">CEMEDE</span>
-                            <span id="badgeConfianza" class="text-[10px] font-bold uppercase tracking-wider bg-blue-600 px-2 py-0.5 rounded text-white shadow-sm" title="Origen de los datos agroclimáticos">Confianza: B (Oficial Local)</span>
+                            <span id="badgeConfianza" class="text-[10px] font-bold uppercase tracking-wider bg-blue-600 px-2 py-0.5 rounded text-white shadow-sm" title="Origen de los datos agroclimáticos">IMN / FAO Oficial</span>
                         </div>
                         <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white mt-1">
                             Cosecha de Lluvia Guanacaste
@@ -54,9 +54,43 @@
         </header>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+        <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-4">
 
-            <!-- PANEL INTERACTIVO DE PARÁMETROS -->
+            <!-- COLUMNA 1: GESTIÓN DE CASOS GUARDADOS -->
+            <section class="lg:col-span-1 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50 flex flex-col justify-between space-y-4">
+                <div class="space-y-4">
+                    <div class="border-b border-slate-200 pb-3">
+                        <span class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">Gestión de Proyectos</span>
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-1.5 mt-0.5">
+                            <i data-lucide="folder-kanban" class="w-4 h-4 text-emerald-700"></i> Casos Guardados
+                        </h2>
+                    </div>
+
+                    <div class="space-y-2">
+                        <button type="button" id="btnGuardarCaso" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold p-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-xs cursor-pointer">
+                            <i data-lucide="bookmark-plus" class="w-4 h-4"></i> Guardar Caso Actual
+                        </button>
+                        <p class="text-[10px] text-slate-400 text-center">Almacena la configuración actual en este dispositivo.</p>
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Historial de Fincas</h3>
+                        <div id="listaCasosContainer" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                            <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs text-slate-400">
+                                No hay casos guardados aún.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-200">
+                    <button type="button" id="btnExportarCasos" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold p-2.5 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 border border-slate-300 cursor-pointer">
+                        <i data-lucide="file-json" class="w-3.5 h-3.5 text-slate-600"></i> Respaldar Casos (JSON)
+                    </button>
+                </div>
+            </section>
+
+            <!-- COLUMNA 2: PARÁMETROS DE FINCA -->
             <section class="lg:col-span-1 bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 space-y-4">
 
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3">
@@ -108,15 +142,15 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-emerald-800 mb-1">Escenario de Precipitación</label>
+                            <label class="block text-xs font-bold text-emerald-800 mb-1">Escenario de Precipitación (IMN)</label>
                             <select id="escenarioClima" class="w-full p-2 border border-emerald-300 bg-emerald-50/60 rounded-xl text-xs font-bold text-emerald-900 outline-none cursor-pointer">
-                                <option value="tipico" selected>Año Típico (Promedio histórico)</option>
+                                <option value="tipico" selected>Año Típico (Promedio histórico IMN)</option>
                                 <option value="seco">Año Seco (Sequía / El Niño -25%)</option>
                                 <option value="humedo">Año Húmedo (La Niña +20%)</option>
                             </select>
                         </div>
 
-                        <button type="button" id="btnUbicacion" class="w-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold p-2 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                        <button type="button" id="btnUbicacion" class="w-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold p-2 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
                             <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i> Usar mi ubicación GPS
                         </button>
                     </div>
@@ -338,43 +372,66 @@
                         </div>
                     </div>
 
-                    <!-- TARJETA 3: ESTANQUE DE AZOLLA -->
+                    <!-- TARJETA 3: UNIDAD DE AZOLLA -->
                     <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm transition-all duration-200">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                                    <i data-lucide="droplets" class="w-4 h-4"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-sm font-bold text-slate-900">Estanque de Azolla</h3>
-                                    <p class="text-[11px] text-slate-400">Reposición y Temperatura</p>
-                                </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900">Unidad de Azolla</h3>
+                                <p class="text-[11px] text-slate-500">Balance de agua de una unidad separada del reservorio principal.</p>
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="checkAzolla" class="sr-only peer">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-700"></div>
-                                <span id="lblAzolla" class="ml-2 text-xs font-bold text-slate-400">No</span>
                             </label>
                         </div>
 
-                        <div id="seccionAzolla" class="mt-4 pt-3 border-t border-slate-100 hidden space-y-2">
+                        <div id="seccionAzolla" class="hidden mt-4 pt-3 border-t border-slate-100 space-y-3">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-700 mb-1">Área Estanque (m²)</label>
-                                    <input type="number" id="areaAzolla" value="20" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Área del estanque</label>
+                                    <div class="relative">
+                                        <input type="number" id="areaAzolla" value="10" class="w-full p-2 pr-7 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                        <span class="absolute right-2 top-2 text-xs text-slate-400 font-bold">m²</span>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-700 mb-1">Temp. Agua (°C)</label>
-                                    <input type="number" id="tempAguaAzolla" value="32" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Lámina operativa de agua</label>
+                                    <div class="relative">
+                                        <input type="number" id="laminaAzolla" value="0.15" step="0.01" class="w-full p-2 pr-6 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                        <span class="absolute right-2 top-2 text-xs text-slate-400 font-bold">m</span>
+                                    </div>
                                 </div>
                             </div>
-                            <p id="lblAlertaAzolla" class="text-[10px] text-amber-700 font-semibold hidden">
-                                ⚠️ Alerta: Temp. agua &gt; 35°C reduce la fijación de nitrógeno. Instalar mallasombra.
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Fracción llena al inicio</label>
+                                    <input type="number" id="fraccionAzolla" value="1" min="0" max="1" step="0.1" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Evaporación supuesta</label>
+                                    <div class="relative">
+                                        <input type="number" id="evaporacionAzolla" value="6" step="0.5" class="w-full p-2 pr-12 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                        <span class="absolute right-2 top-2 text-[10px] text-slate-400 font-bold">mm/día</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Infiltración supuesta</label>
+                                <div class="relative">
+                                    <input type="number" id="infiltracionAzolla" value="0" step="0.5" class="w-full p-2 pr-12 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 outline-none">
+                                    <span class="absolute right-2 top-2 text-[10px] text-slate-400 font-bold">mm/día</span>
+                                </div>
+                            </div>
+
+                            <p class="text-[10px] text-slate-500 leading-tight pt-1">
+                                Recibe lluvia directa y solicita agua para mantener su lámina. Si inicia vacío, el llenado se solicita al reservorio. Estas hipótesis no estiman producción de biomasa, calidad nutricional ni dieta.
                             </p>
                         </div>
                     </div>
 
-                    <!-- PROYECCIÓN Y BOTÓN CONTINUAR -->
+                    <!-- PROYECCIÓN Y BOTÓN CALCULAR -->
                     <div>
                         <label class="block text-xs font-bold text-emerald-900 mb-1">Horizonte de Proyección</label>
                         <select id="rangoAnios" class="w-full p-2 border border-emerald-300 bg-emerald-50/50 rounded-xl text-xs font-bold text-emerald-900 outline-none cursor-pointer">
@@ -385,14 +442,14 @@
                     </div>
 
                     <div class="flex items-center gap-3 pt-2">
-                        <button type="button" id="btnCalcular" class="w-full bg-teal-800 hover:bg-teal-900 text-white font-bold p-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm">
+                        <button type="button" id="btnCalcular" class="w-full bg-teal-800 hover:bg-teal-900 text-white font-bold p-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm cursor-pointer">
                             Calcular Balance <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </form>
             </section>
 
-            <!-- PANEL DE RESULTADOS Y MÉTRICAS AMPLIADAS -->
+            <!-- COLUMNA 3 & 4: RESULTADOS, GRÁFICO Y MÉTRICAS -->
             <section class="lg:col-span-2 space-y-5">
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div class="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-white/50">
@@ -423,7 +480,7 @@
                         <h3 id="tituloGrafico" class="text-sm font-bold text-slate-900 flex items-center gap-2">
                             <i data-lucide="line-chart" class="w-4 h-4 text-emerald-600"></i> Proyección del Tanque
                         </h3>
-                        <button onclick="generarInformePDF()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition shadow">
+                        <button onclick="generarInformePDF()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition shadow cursor-pointer">
                             <i data-lucide="download" class="w-3.5 h-3.5"></i> Descargar Informe PDF
                         </button>
                     </div>
@@ -444,7 +501,7 @@
                             <span id="detCultivo" class="font-bold text-slate-800">0 L/día</span>
                         </div>
                         <div class="flex justify-between py-1 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium">Reposición Estanque Azolla:</span>
+                            <span class="text-slate-600 font-medium">Demanda Promedio Estanque Azolla:</span>
                             <span id="detAzolla" class="font-bold text-slate-800">0 L/día</span>
                         </div>
                         <div class="flex justify-between py-1 border-b border-slate-100 bg-emerald-50/50 px-2 rounded">

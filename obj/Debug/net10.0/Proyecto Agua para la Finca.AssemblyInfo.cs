@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Proyecto Agua para la Finca")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bb71f3f776e0a33b7a2a3e91a85321ff407a7cfc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86dbb374f301f644ee510cfc161327ad2bfc0b45")]
 [assembly: System.Reflection.AssemblyProductAttribute("Proyecto Agua para la Finca")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Proyecto Agua para la Finca")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
