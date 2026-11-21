@@ -9,6 +9,11 @@
     <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
     <link rel="apple-touch-icon" href="img/icon-192.png">
     <meta name="theme-color" content="#065f46">
+    <style>
+        #loginOverlay[hidden] {
+            display: none;
+        }
+    </style>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,7 +29,29 @@
 
     <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
 
-    <div class="relative z-10 pb-12">
+    <div id="loginOverlay" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="loginTitulo">
+        <form id="loginForm" class="w-full max-w-sm space-y-4 rounded-2xl border border-white/50 bg-white p-6 shadow-2xl" autocomplete="on">
+            <div class="text-center">
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-700">CEMEDE · UNA</span>
+                <h1 id="loginTitulo" class="mt-1 text-xl font-black text-slate-900">Iniciar sesión</h1>
+                <p class="mt-1 text-sm text-slate-600">Ingresa tus credenciales para acceder a toda la aplicación y sus casos compartidos.</p>
+            </div>
+            <div>
+                <label for="loginUsuario" class="mb-1 block text-sm font-semibold text-slate-700">Usuario</label>
+                <input id="loginUsuario" name="username" type="text" autocomplete="username" required class="w-full rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-200">
+            </div>
+            <div>
+                <label for="loginContrasena" class="mb-1 block text-sm font-semibold text-slate-700">Contraseña</label>
+                <input id="loginContrasena" name="password" type="password" autocomplete="current-password" required class="w-full rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-200">
+            </div>
+            <p id="loginError" class="min-h-5 text-sm text-rose-700" role="alert" aria-live="assertive"></p>
+            <button id="btnLogin" type="submit" class="w-full rounded-xl bg-emerald-800 p-3 font-bold text-white transition hover:bg-emerald-900 disabled:cursor-wait disabled:opacity-60">
+                Entrar
+            </button>
+        </form>
+    </div>
+
+    <div id="appShell" class="relative z-10 pb-12" hidden inert aria-hidden="true">
         <!-- ENCABEZADO INSTITUCIONAL -->
         <header class="bg-emerald-900/90 text-white backdrop-blur-md shadow-lg border-b border-emerald-700/50">
             <div class="max-w-7xl mx-auto p-4 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -45,19 +72,37 @@
                         <p class="text-xs text-emerald-200">Centro Mesoamericano de Desarrollo Sostenible del Trópico Seco</p>
                     </div>
                 </div>
-                <div class="text-right hidden md:block">
-                    <span class="text-xs font-medium bg-emerald-950/60 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-600/40 flex items-center gap-1.5">
+                <div class="flex flex-col items-center gap-2 sm:flex-row">
+                    <span class="hidden text-xs font-medium bg-emerald-950/60 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-600/40 md:flex md:items-center md:gap-1.5">
                         <i data-lucide="sprout" class="w-3.5 h-3.5 text-emerald-400"></i> Sistema Integral de Finca Sostenible
                     </span>
+                    <span id="usuarioActual" class="text-xs font-semibold text-emerald-100"></span>
+                    <button id="btnCerrarSesion" type="button" class="rounded-lg border border-emerald-500/60 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-800">
+                        Cerrar sesión
+                    </button>
                 </div>
             </div>
         </header>
 
+        <nav class="mx-auto max-w-7xl px-4 pt-4 md:px-6" aria-label="Navegación de secciones">
+            <div class="flex w-full gap-2 overflow-x-auto rounded-2xl bg-white/80 p-2 shadow-lg backdrop-blur-md" role="tablist" aria-label="Secciones de la finca">
+                <button type="button" id="tab-casos" role="tab" aria-controls="panel-casos" aria-selected="false" tabindex="-1" class="flex min-w-[8rem] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-3 text-xs font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 bg-white/70 text-slate-600 hover:bg-white hover:text-emerald-800">
+                    <i data-lucide="folder-kanban" class="h-4 w-4"></i> Casos guardados
+                </button>
+                <button type="button" id="tab-parametros" role="tab" aria-controls="panel-parametros" aria-selected="true" tabindex="0" class="flex min-w-[8rem] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-3 text-xs font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 bg-emerald-700 text-white shadow-md">
+                    <i data-lucide="sliders-horizontal" class="h-4 w-4"></i> Parámetros
+                </button>
+                <button type="button" id="tab-resultados" role="tab" aria-controls="panel-resultados" aria-selected="false" tabindex="-1" class="flex min-w-[8rem] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-3 text-xs font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 bg-white/70 text-slate-600 hover:bg-white hover:text-emerald-800">
+                    <i data-lucide="chart-no-axes-combined" class="h-4 w-4"></i> Resultados
+                </button>
+            </div>
+        </nav>
+
         <!-- CONTENIDO PRINCIPAL -->
-        <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-4">
+        <main class="max-w-7xl mx-auto p-4 md:p-6 mt-4">
 
             <!-- COLUMNA 1: GESTIÓN DE CASOS GUARDADOS -->
-            <section class="lg:col-span-1 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50 flex flex-col justify-between space-y-4">
+            <section id="panel-casos" role="tabpanel" aria-labelledby="tab-casos" tabindex="0" hidden class="mx-auto w-full max-w-3xl bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50 space-y-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700">
                 <div class="space-y-4">
                     <div class="border-b border-slate-200 pb-3">
                         <span class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">Gestión de Proyectos</span>
@@ -70,7 +115,7 @@
                         <button type="button" id="btnGuardarCaso" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold p-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-xs cursor-pointer">
                             <i data-lucide="bookmark-plus" class="w-4 h-4"></i> Guardar Caso Actual
                         </button>
-                        <p class="text-[10px] text-slate-400 text-center">Almacena la configuración actual en este dispositivo.</p>
+                        <p class="text-[10px] text-slate-500 text-center">Los casos se guardan en el servidor y se comparten entre funcionarios autenticados. Guardar un nombre existente lo actualiza.</p>
                     </div>
 
                     <div class="space-y-2 pt-2">
@@ -91,7 +136,7 @@
             </section>
 
             <!-- COLUMNA 2: PARÁMETROS DE FINCA -->
-            <section class="lg:col-span-1 bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 space-y-4">
+            <section id="panel-parametros" role="tabpanel" aria-labelledby="tab-parametros" tabindex="0" class="mx-auto w-full max-w-5xl bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 space-y-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700">
 
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                     <div>
@@ -150,9 +195,15 @@
                             </select>
                         </div>
 
-                        <button type="button" id="btnUbicacion" class="w-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold p-2 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+                        <button type="button" id="btnUbicacion" class="w-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold p-2 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:cursor-wait disabled:opacity-60">
                             <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i> Usar mi ubicación GPS
                         </button>
+                        <p id="estadoUbicacion" class="text-[10px] text-center text-slate-500" role="status" aria-live="polite">
+                            Presiona el botón para detectar el cantón y el distrito por GPS.
+                        </p>
+                        <p class="text-[9px] text-center text-slate-500">
+                            La detección se calcula en este dispositivo con límites administrativos de <a class="underline" href="https://data.humdata.org/dataset/cod-ab-cri" target="_blank" rel="noopener noreferrer">Costa Rica / HDX</a> (2022, CC BY 3.0 IGO, vía <a class="underline" href="https://www.geoboundaries.org/" target="_blank" rel="noopener noreferrer">geoBoundaries</a>). Verifica cerca de límites o donde la cobertura esté incompleta.
+                        </p>
                     </div>
 
                     <!-- CAPTACIÓN & TANQUE BASE -->
@@ -450,7 +501,7 @@
             </section>
 
             <!-- COLUMNA 3 & 4: RESULTADOS, GRÁFICO Y MÉTRICAS -->
-            <section class="lg:col-span-2 space-y-5">
+            <section id="panel-resultados" role="tabpanel" aria-labelledby="tab-resultados" tabindex="0" hidden class="w-full space-y-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700">
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div class="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-white/50">
                         <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Captación Anual</p>
@@ -475,17 +526,144 @@
                     <p id="alertMessage" class="text-xs font-semibold">Excelente balance: La reserva del tanque cubre la demanda requerida.</p>
                 </div>
 
+                <figure class="overflow-hidden rounded-2xl border border-white/60 bg-white/95 p-4 shadow-xl backdrop-blur-md sm:p-5">
+                    <figcaption class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700">Esquema de referencia</span>
+                            <h3 class="text-base font-bold text-slate-900">Así se aprovecha el agua en la finca</h3>
+                        </div>
+                        <p class="text-[10px] font-medium text-slate-500">Ilustración orientativa, no está a escala</p>
+                    </figcaption>
+
+                    <div class="mt-4 rounded-xl border border-emerald-100 bg-gradient-to-b from-sky-50 to-emerald-50 p-2 sm:p-4">
+                        <svg viewBox="0 0 900 290" class="block h-auto w-full" role="img" aria-labelledby="ilustracionTitulo ilustracionDescripcion">
+                            <title id="ilustracionTitulo">Captación de lluvia y uso del agua en la parcela</title>
+                            <desc id="ilustracionDescripcion">La lluvia cae sobre el techo, pasa por una canaleta hasta el tanque y se conduce a una parcela de cultivo.</desc>
+                            <defs>
+                                <marker id="puntaAgua" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                                    <path d="M0 0 L8 4 L0 8 Z" fill="#0284c7"></path>
+                                </marker>
+                            </defs>
+
+                            <path d="M0 246 Q180 230 360 246 T720 242 T900 246 V290 H0 Z" fill="#bbf7d0"></path>
+                            <path d="M0 260 Q180 244 360 260 T720 256 T900 260" fill="none" stroke="#86efac" stroke-width="2"></path>
+
+                            <g aria-hidden="true">
+                                <circle cx="158" cy="51" r="20" fill="#fff" stroke="#bae6fd" stroke-width="2"></circle>
+                                <circle cx="183" cy="42" r="27" fill="#fff" stroke="#bae6fd" stroke-width="2"></circle>
+                                <circle cx="211" cy="52" r="19" fill="#fff" stroke="#bae6fd" stroke-width="2"></circle>
+                                <path d="M145 58 H224" stroke="#bae6fd" stroke-width="2"></path>
+                                <path d="M158 76 l-7 14 M185 76 l-7 14 M211 76 l-7 14" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"></path>
+                                <text x="166" y="24" fill="#0369a1" font-size="12" font-weight="700">LLUVIA</text>
+                            </g>
+
+                            <g aria-hidden="true">
+                                <rect x="111" y="122" width="166" height="116" rx="4" fill="#fffbeb" stroke="#92400e" stroke-width="3"></rect>
+                                <path d="M91 125 L194 58 L297 125 Z" id="ilustracionTecho" fill="#94a3b8" stroke="#475569" stroke-width="4" stroke-linejoin="round"></path>
+                                <path d="M130 112 L194 70 M163 119 L218 83 M200 119 L245 89 M238 119 L270 98" fill="none" stroke="#64748b" stroke-width="2" opacity=".8"></path>
+                                <rect x="176" y="175" width="39" height="63" rx="3" fill="#d6d3d1" stroke="#78716c" stroke-width="2"></rect>
+                                <circle cx="205" cy="207" r="2" fill="#57534e"></circle>
+                                <rect x="124" y="148" width="33" height="31" rx="2" fill="#bae6fd" stroke="#64748b" stroke-width="2"></rect>
+                                <path d="M140 148 V179 M124 163 H157" stroke="#64748b" stroke-width="2"></path>
+                                <path d="M286 124 H311 V181 Q311 194 326 194 H355" fill="none" stroke="#0284c7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#puntaAgua)"></path>
+                                <path d="M286 120 H310" stroke="#64748b" stroke-width="5" stroke-linecap="round"></path>
+                                <text x="105" y="259" fill="#334155" font-size="13" font-weight="700">Vivienda y techo</text>
+                                <text x="280" y="148" fill="#0369a1" font-size="11" font-weight="700">Canaleta</text>
+                            </g>
+
+                            <g aria-hidden="true">
+                                <ellipse cx="407" cy="170" rx="50" ry="13" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="3"></ellipse>
+                                <path d="M357 170 V237 Q407 259 457 237 V170" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"></path>
+                                <path d="M359 205 Q407 217 455 205 V236 Q407 254 359 236 Z" fill="#38bdf8" opacity=".8"></path>
+                                <path d="M358 205 Q407 217 456 205" fill="none" stroke="#0284c7" stroke-width="2"></path>
+                                <ellipse cx="407" cy="237" rx="50" ry="13" fill="none" stroke="#1d4ed8" stroke-width="3"></ellipse>
+                                <text x="372" y="278" fill="#1e3a8a" font-size="13" font-weight="700">Tanque</text>
+                                <path d="M457 211 H518 V225 H557" fill="none" stroke="#0e7490" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#puntaAgua)"></path>
+                            </g>
+
+                            <g aria-hidden="true">
+                                <rect x="555" y="144" width="303" height="95" rx="12" fill="#dcfce7" stroke="#86efac" stroke-width="2"></rect>
+                                <path d="M568 224 H845 M568 232 H845" stroke="#a3e635" stroke-width="2" stroke-dasharray="7 6"></path>
+                                <g id="cultivo-maiz">
+                                    <path d="M628 218 V168 M690 218 V160 M752 218 V170" stroke="#15803d" stroke-width="5" stroke-linecap="round"></path>
+                                    <path d="M628 193 Q604 181 605 172 Q622 174 628 187 M628 202 Q649 188 653 177 Q637 180 628 196 M690 188 Q667 176 666 165 Q683 167 690 182 M690 198 Q712 184 715 173 Q699 176 690 191 M752 194 Q731 181 731 170 Q747 173 752 187 M752 204 Q773 190 776 179 Q760 182 752 197" fill="#4ade80" stroke="#15803d" stroke-width="2"></path>
+                                    <ellipse cx="635" cy="196" rx="5" ry="11" fill="#facc15" stroke="#a16207" stroke-width="2"></ellipse>
+                                    <ellipse cx="697" cy="191" rx="5" ry="11" fill="#facc15" stroke="#a16207" stroke-width="2"></ellipse>
+                                    <ellipse cx="759" cy="198" rx="5" ry="11" fill="#facc15" stroke="#a16207" stroke-width="2"></ellipse>
+                                </g>
+                                <g id="cultivo-melon" style="display:none">
+                                    <path d="M596 213 Q640 189 678 211 T760 208 T824 210" fill="none" stroke="#15803d" stroke-width="4"></path>
+                                    <path d="M626 204 Q607 192 611 183 Q628 186 632 200 M667 205 Q677 189 690 190 Q690 204 674 210 M724 207 Q709 192 714 183 Q731 187 733 202 M784 208 Q796 192 808 195 Q806 208 791 213" fill="#4ade80" stroke="#15803d" stroke-width="2"></path>
+                                    <ellipse cx="649" cy="215" rx="14" ry="10" fill="#fb923c" stroke="#c2410c" stroke-width="2"></ellipse>
+                                    <ellipse cx="750" cy="216" rx="15" ry="10" fill="#86efac" stroke="#15803d" stroke-width="2"></ellipse>
+                                    <path d="M740 209 Q750 216 760 223 M740 216 H760" stroke="#15803d" stroke-width="1.5"></path>
+                                </g>
+                                <g id="cultivo-pasto" style="display:none" fill="none" stroke="#15803d" stroke-width="3" stroke-linecap="round">
+                                    <path d="M592 219 l5 -28 m2 28 l14 -22 m14 22 l-2 -34 m4 34 l15 -25 m13 25 l7 -29 m13 29 l15 -23 m12 23 l2 -34 m6 34 l17 -25 m10 25 l5 -29 m12 29 l14 -22 m12 22 l-2 -32 m6 32 l16 -26 m12 26 l6 -30 m10 30 l14 -23 m13 23 l2 -32 m6 32 l15 -24 m10 24 l4 -29"></path>
+                                </g>
+                                <g id="cultivo-hortalizas" style="display:none">
+                                    <path d="M610 218 V193 M674 218 V190 M738 218 V194 M802 218 V191" stroke="#15803d" stroke-width="4"></path>
+                                    <path d="M610 203 Q590 191 594 183 Q609 184 614 198 M610 207 Q628 192 637 196 Q633 208 615 212 M674 202 Q655 188 659 180 Q675 184 678 198 M674 207 Q691 192 700 196 Q697 208 679 212 M738 204 Q719 190 723 182 Q739 185 742 200 M738 209 Q755 194 764 198 Q761 210 743 214 M802 202 Q783 188 787 180 Q803 184 806 198 M802 207 Q819 192 828 196 Q825 208 807 212" fill="#4ade80" stroke="#15803d" stroke-width="2"></path>
+                                    <circle cx="641" cy="222" r="6" fill="#ef4444"></circle>
+                                    <circle cx="704" cy="222" r="6" fill="#f97316"></circle>
+                                    <circle cx="768" cy="222" r="6" fill="#ef4444"></circle>
+                                    <circle cx="832" cy="222" r="6" fill="#f97316"></circle>
+                                </g>
+                                <g id="riego-aspersion" style="display:none" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round">
+                                    <path d="M572 210 Q586 190 600 210 M565 206 Q586 176 607 206 M558 202 Q586 164 614 202"></path>
+                                    <circle cx="586" cy="211" r="4" fill="#0284c7"></circle>
+                                </g>
+                                <g id="riego-goteo" style="display:none" fill="none" stroke="#0284c7" stroke-width="2.5">
+                                    <path d="M580 215 H830"></path>
+                                    <path d="M632 215 V222 M696 215 V222 M760 215 V222 M824 215 V222" stroke-linecap="round"></path>
+                                    <circle cx="632" cy="225" r="2.5" fill="#38bdf8"></circle>
+                                    <circle cx="696" cy="225" r="2.5" fill="#38bdf8"></circle>
+                                    <circle cx="760" cy="225" r="2.5" fill="#38bdf8"></circle>
+                                    <circle cx="824" cy="225" r="2.5" fill="#38bdf8"></circle>
+                                </g>
+                                <g id="riego-gravedad" style="display:none" fill="none" stroke="#0284c7" stroke-width="3" stroke-linecap="round">
+                                    <path d="M575 214 H832 M595 221 H816 M615 228 H800"></path>
+                                </g>
+                                <text x="558" y="130" fill="#166534" font-size="13" font-weight="700">Parcela y cultivo</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <dl class="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <dt class="font-semibold text-slate-500">Cubierta</dt>
+                            <dd id="ilustracionMaterial" class="mt-1 font-bold text-slate-800">Lámina de Zinc (C = 0.90)</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <dt class="font-semibold text-slate-500">Capacidad del tanque</dt>
+                            <dd id="ilustracionCapacidad" class="mt-1 font-bold text-slate-800">10 m³</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <dt class="font-semibold text-slate-500">Cultivo</dt>
+                            <dd id="ilustracionCultivo" class="mt-1 font-bold text-slate-800">Maíz dulce</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <dt class="font-semibold text-slate-500">Sistema de riego</dt>
+                            <dd id="ilustracionRiego" class="mt-1 font-bold text-slate-800">Aspersión · 85%</dd>
+                        </div>
+                    </dl>
+                </figure>
+
                 <div class="bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50">
-                    <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
+                    <div class="flex flex-col gap-3 border-b border-slate-200 pb-2 mb-3 sm:flex-row sm:items-center sm:justify-between">
                         <h3 id="tituloGrafico" class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="line-chart" class="w-4 h-4 text-emerald-600"></i> Proyección del Tanque
+                            <i data-lucide="line-chart" class="w-4 h-4 text-emerald-600"></i> Agua mes a mes
                         </h3>
-                        <button onclick="generarInformePDF()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition shadow cursor-pointer">
+                        <button onclick="generarInformePDF()" class="self-start whitespace-nowrap rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow transition hover:bg-emerald-800 sm:self-auto">
                             <i data-lucide="download" class="w-3.5 h-3.5"></i> Descargar Informe PDF
                         </button>
                     </div>
+                    <div id="ayudaGrafico" role="note" class="mb-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs leading-relaxed text-slate-700 sm:p-4">
+                        <p class="font-bold text-sky-900">Cómo leer este gráfico</p>
+                        <p class="mt-1">Cada punto representa un mes. La línea verde muestra cuánta agua queda en el tanque al final del mes; la azul, cuánta lluvia se recoge durante ese mes; y la roja, cuánta agua usa la finca. La simulación empieza con el tanque lleno. Si la línea verde llega a <strong>0 L</strong>, el tanque queda vacío al cierre de ese mes. Todas las cantidades se expresan en litros.</p>
+                    </div>
                     <div class="relative w-full h-64 sm:h-80">
-                        <canvas id="chartBalance"></canvas>
+                        <canvas id="chartBalance" role="img" aria-describedby="ayudaGrafico" aria-label="Gráfico mensual de agua almacenada, recogida y usada en la finca"></canvas>
                     </div>
                 </div>
 
@@ -521,7 +699,7 @@
 
     <!-- SCRIPTS -->
     <script src="js/calculator.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=20261121"></script>
     <script>
                 document.addEventListener("DOMContentLoaded", () => {
                     lucide.createIcons();

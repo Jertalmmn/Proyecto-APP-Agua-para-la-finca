@@ -1,4 +1,5 @@
 ﻿let chartInstance = null;
+let casosGuardados = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const selectCanton = document.getElementById('canton');
@@ -7,16 +8,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnUbicacion = document.getElementById('btnUbicacion');
     const btnGuardarCaso = document.getElementById('btnGuardarCaso');
     const btnExportarCasos = document.getElementById('btnExportarCasos');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+    let limitesAdministrativosPromise = null;
 
     setupToggles();
     setupModoTecnico();
+    setupTabs();
+    setupIlustracionFinca();
     renderizarListaCasos();
 
-    function actualizarDistritos() {
+    function actualizarDistritos(distritoInicial) {
         const canton = selectCanton.value;
         const distritos = Calculator.distritosPorCanton[canton] || [];
+        const distritoActual = distritoInicial === undefined ? selectDistrito.value : distritoInicial;
 
         selectDistrito.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Seleccione un distrito';
+        selectDistrito.appendChild(placeholder);
+
         distritos.forEach(dist => {
             const opt = document.createElement('option');
             const claveLimpia = dist.toLowerCase()
@@ -27,50 +41,109 @@ document.addEventListener('DOMContentLoaded', () => {
             opt.textContent = dist;
             selectDistrito.appendChild(opt);
         });
+
+        const distritoExiste = distritos.some(dist => {
+            const clave = dist.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, '_');
+            return clave === distritoActual;
+        });
+
+        if (distritoExiste) selectDistrito.value = distritoActual;
+        else if (distritoInicial === '') selectDistrito.value = '';
+        else if (distritos.length > 0) selectDistrito.selectedIndex = 1;
+
         actualizarBadgeConfianza();
     }
 
     function actualizarBadgeConfianza() {
-        const distText = selectDistrito.options[selectDistrito.selectedIndex]?.text || '';
+        const distText = selectDistrito.value
+            ? selectDistrito.options[selectDistrito.selectedIndex]?.text || ''
+            : '';
         const badge = document.getElementById('badgeConfianza');
         if (badge) {
-            badge.textContent = `IMN / FAO: ${distText}`;
+            const cantonText = selectCanton.options[selectCanton.selectedIndex]?.text || '';
+            badge.textContent = `IMN / FAO: ${distText || `Cantón ${cantonText}`}`;
         }
     }
 
-    selectCanton.addEventListener('change', actualizarDistritos);
+    function cargarLimitesAdministrativos() {
+        if (!limitesAdministrativosPromise) {
+            limitesAdministrativosPromise = fetch('./data/district-boundaries.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`No se pudieron cargar los límites administrativos (${response.status}).`);
+                    }
+                    return response.json();
+                })
+                .then(limites => {
+                    if (!limites || !limites.cantones || !Array.isArray(limites.districts)) {
+                        throw new Error('El archivo de límites administrativos tiene un formato inválido.');
+                    }
+                    return limites;
+                })
+                .catch(error => {
+                    limitesAdministrativosPromise = null;
+                    throw error;
+                });
+        }
+
+        return limitesAdministrativosPromise;
+    }
+
+    selectCanton.addEventListener('change', () => actualizarDistritos());
     selectDistrito.addEventListener('change', actualizarBadgeConfianza);
 
-    actualizarDistritos();
+    actualizarDistritos('nicoya');
 
     // BOTÓN CALCULAR BALANCE: ÚNICO DISPARADOR DE LA GRÁFICA Y CÁLCULOS
-    btnCalcular.addEventListener('click', ejecutarCalculo);
+    btnCalcular.addEventListener('click', () => {
+        ejecutarCalculo();
+        const tabResultados = document.getElementById('tab-resultados');
+        tabResultados.click();
+        tabResultados.focus();
+    });
 
     document.getElementById('tipoGanado').addEventListener('change', (e) => {
         const tasa = Calculator.tasasGanado[e.target.value] || 50;
         document.getElementById('lblDotacionOficial').textContent = tasa;
     });
 
-    // GESTIÓN DE CASOS GUARDADOS EN LOCALSTORAGE
-    btnGuardarCaso.addEventListener('click', () => {
-        const nombreFinca = document.getElementById('nombreFinca').value || "Finca sin nombre";
-        const params = capturarParametrosActuales();
-        
-        let casos = JSON.parse(localStorage.getItem('fincas_casos_guardados') || '[]');
-        const idx = casos.findIndex(c => c.nombre === nombreFinca);
-        const nuevoCaso = { id: Date.now(), nombre: nombreFinca, fecha: new Date().toLocaleDateString('es-CR'), params };
-        
-        if (idx >= 0) casos[idx] = nuevoCaso;
-        else casos.push(nuevoCaso);
+    btnGuardarCaso.addEventListener('click', async () => {
+        const nombreFinca = document.getElementById('nombreFinca').value.trim() || "Finca sin nombre";
+        const request = {
+            nombre: nombreFinca,
+            fecha: new Date().toLocaleDateString('es-CR'),
+            params: capturarParametrosActuales()
+        };
 
-        localStorage.setItem('fincas_casos_guardados', JSON.stringify(casos));
-        renderizarListaCasos();
-        alert(`¡Caso "${nombreFinca}" guardado exitosamente!`);
+        btnGuardarCaso.disabled = true;
+        try {
+            const response = await fetch('/api/cases', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(request)
+            });
+            if (response.status === 401) {
+                mostrarPantallaAcceso('La sesión venció. Inicia sesión de nuevo.');
+                return;
+            }
+            if (!response.ok) {
+                throw new Error(`El servidor rechazó el caso (${response.status}).`);
+            }
+
+            await cargarCasosServidor();
+            alert(`¡Caso "${nombreFinca}" guardado en el servidor!`);
+        } catch (error) {
+            console.error('No se pudo guardar el caso.', error);
+            alert(`No se pudo guardar el caso: ${error.message}`);
+        } finally {
+            btnGuardarCaso.disabled = false;
+        }
     });
 
     btnExportarCasos.addEventListener('click', () => {
-        const casos = localStorage.getItem('fincas_casos_guardados') || '[]';
-        const blob = new Blob([casos], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(casosGuardados, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -79,25 +152,198 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnUbicacion.addEventListener('click', () => {
+        const estadoUbicacion = document.getElementById('estadoUbicacion');
         if (!navigator.geolocation) {
-            alert("La geolocalización no es soportada.");
+            const mensaje = "Este navegador no permite obtener la ubicación GPS.";
+            estadoUbicacion.textContent = mensaje;
+            alert(mensaje);
             return;
         }
 
+        btnUbicacion.disabled = true;
+        estadoUbicacion.textContent = "Solicitando ubicación actual...";
+
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const canton = Calculator.calcularCantonCercano(pos.coords.latitude, pos.coords.longitude);
-                selectCanton.value = canton;
-                actualizarDistritos();
+            async (posicion) => {
+                const { latitude, longitude, accuracy } = posicion.coords;
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+                    const mensaje = "El GPS devolvió coordenadas inválidas; no se cambió la ubicación seleccionada.";
+                    estadoUbicacion.textContent = mensaje;
+                    alert(mensaje);
+                    btnUbicacion.disabled = false;
+                    return;
+                }
+
+                estadoUbicacion.textContent = "Ubicación recibida; identificando cantón y distrito localmente...";
+                try {
+                    const limites = await cargarLimitesAdministrativos();
+                    const ubicacion = Calculator.encontrarUbicacionGPS(latitude, longitude, limites);
+                    if (!ubicacion) {
+                        const mensaje = "No se encontró la ubicación dentro de los límites de los cantones disponibles; no se cambió la selección.";
+                        estadoUbicacion.textContent = mensaje;
+                        alert(mensaje);
+                        return;
+                    }
+
+                    selectCanton.value = ubicacion.canton;
+                    actualizarDistritos(ubicacion.distrito || '');
+                    const cantonText = selectCanton.options[selectCanton.selectedIndex]?.text || ubicacion.canton;
+                    const precision = Number.isFinite(accuracy) ? ` (precisión ±${Math.round(accuracy)} m)` : '';
+                    if (ubicacion.distrito) {
+                        const distritoText = selectDistrito.options[selectDistrito.selectedIndex]?.text || ubicacion.distrito;
+                        estadoUbicacion.textContent = `GPS detectó ${distritoText}, cantón ${cantonText}, ${latitude.toFixed(5)}, ${longitude.toFixed(5)}${precision}.`;
+                    } else {
+                        estadoUbicacion.textContent = `Cantón ${cantonText} detectado, pero no se pudo identificar el distrito con los límites disponibles. Selecciónalo manualmente${precision}.`;
+                    }
+                } catch (error) {
+                    console.error("No se pudieron resolver los límites administrativos para GPS.", error);
+                    const mensaje = "No se pudieron cargar los límites administrativos; no se cambió la selección. Inténtalo de nuevo más tarde.";
+                    estadoUbicacion.textContent = mensaje;
+                    alert(mensaje);
+                } finally {
+                    btnUbicacion.disabled = false;
+                }
             },
-            () => { alert("No se pudo obtener la ubicación GPS."); },
+            (error) => {
+                btnUbicacion.disabled = false;
+                let mensaje;
+                switch (error.code) {
+                    case 1:
+                        mensaje = "Permiso de ubicación denegado. Habilítalo en la configuración del navegador.";
+                        break;
+                    case 2:
+                        mensaje = "No se pudo determinar la ubicación. Revisa la señal del dispositivo e inténtalo de nuevo.";
+                        break;
+                    case 3:
+                        mensaje = "La solicitud de ubicación tardó demasiado. Inténtalo nuevamente.";
+                        break;
+                    default:
+                        mensaje = "Ocurrió un error al obtener la ubicación GPS.";
+                        break;
+                }
+                estadoUbicacion.textContent = mensaje;
+                alert(mensaje);
+            },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     });
 
-    // Cálculo inicial al cargar la página
-    ejecutarCalculo();
+    loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        loginError.textContent = '';
+        btnLogin.disabled = true;
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    usuario: document.getElementById('loginUsuario').value,
+                    contrasena: document.getElementById('loginContrasena').value
+                })
+            });
+
+            if (response.status === 401) {
+                loginError.textContent = 'Usuario o contraseña incorrectos.';
+                return;
+            }
+            if (response.status === 503) {
+                loginError.textContent = 'La autenticación no está configurada en este servidor.';
+                return;
+            }
+            if (!response.ok) {
+                throw new Error(`El servidor respondió ${response.status}.`);
+            }
+
+            const session = await response.json();
+            await cargarCasosServidor();
+            mostrarAplicacion(session.username);
+            loginForm.reset();
+        } catch (error) {
+            console.error('No se pudo iniciar sesión.', error);
+            loginError.textContent = 'No se pudo iniciar sesión. Revisa la conexión con el servidor e inténtalo de nuevo.';
+        } finally {
+            btnLogin.disabled = false;
+        }
+    });
+
+    btnCerrarSesion.addEventListener('click', async () => {
+        btnCerrarSesion.disabled = true;
+        try {
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            if (!response.ok && response.status !== 401) {
+                throw new Error(`El servidor respondió ${response.status}.`);
+            }
+
+            casosGuardados = [];
+            renderizarListaCasos();
+            mostrarPantallaAcceso('');
+            loginForm.reset();
+        } catch (error) {
+            console.error('No se pudo cerrar la sesión.', error);
+            alert('No se pudo cerrar la sesión. Inténtalo de nuevo.');
+        } finally {
+            btnCerrarSesion.disabled = false;
+        }
+    });
+
+    async function verificarSesion() {
+        try {
+            const response = await fetch('/api/auth/session');
+            if (!response.ok) {
+                throw new Error(`El servidor respondió ${response.status}.`);
+            }
+
+            const session = await response.json();
+            if (!session.authenticated) {
+                mostrarPantallaAcceso('');
+                return;
+            }
+
+            await cargarCasosServidor();
+            mostrarAplicacion(session.username);
+        } catch (error) {
+            console.error('No se pudo verificar la sesión.', error);
+            mostrarPantallaAcceso('No se pudo conectar con el servidor. Inténtalo de nuevo.');
+        }
+    }
+
+    void verificarSesion();
 });
+
+function mostrarPantallaAcceso(mensaje) {
+    const appShell = document.getElementById('appShell');
+    appShell.hidden = true;
+    appShell.inert = true;
+    appShell.setAttribute('aria-hidden', 'true');
+    document.getElementById('loginOverlay').hidden = false;
+    document.getElementById('loginError').textContent = mensaje;
+    document.getElementById('loginUsuario').focus();
+}
+
+function mostrarAplicacion(usuario) {
+    const appShell = document.getElementById('appShell');
+    appShell.hidden = false;
+    appShell.inert = false;
+    appShell.removeAttribute('aria-hidden');
+    document.getElementById('loginOverlay').hidden = true;
+    document.getElementById('usuarioActual').textContent = `Sesión: ${usuario}`;
+    ejecutarCalculo();
+}
+
+async function cargarCasosServidor() {
+    const response = await fetch('/api/cases');
+    if (response.status === 401) {
+        mostrarPantallaAcceso('La sesión venció. Inicia sesión de nuevo.');
+        throw new Error('La sesión ya no está autenticada.');
+    }
+    if (!response.ok) {
+        throw new Error(`No se pudieron cargar los casos (${response.status}).`);
+    }
+
+    casosGuardados = await response.json();
+    renderizarListaCasos();
+}
 
 function capturarParametrosActuales() {
     return {
@@ -128,8 +374,7 @@ function capturarParametrosActuales() {
 }
 
 function cargarCaso(id) {
-    const casos = JSON.parse(localStorage.getItem('fincas_casos_guardados') || '[]');
-    const caso = casos.find(c => c.id === id);
+    const caso = casosGuardados.find(c => c.id === id);
     if (!caso) return;
     const p = caso.params;
 
@@ -165,44 +410,172 @@ function cargarCaso(id) {
 
     document.getElementById('rangoAnios').value = p.rangoAnios || 1;
 
+    actualizarIlustracionFinca();
     ejecutarCalculo();
 }
 
-function eliminarCaso(id, event) {
+async function eliminarCaso(id, event) {
     event.stopPropagation();
     if (!confirm("¿Desea eliminar este caso guardado?")) return;
-    let casos = JSON.parse(localStorage.getItem('fincas_casos_guardados') || '[]');
-    casos = casos.filter(c => c.id !== id);
-    localStorage.setItem('fincas_casos_guardados', JSON.stringify(casos));
-    renderizarListaCasos();
+
+    try {
+        const response = await fetch(`/api/cases/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (response.status === 401) {
+            mostrarPantallaAcceso('La sesión venció. Inicia sesión de nuevo.');
+            return;
+        }
+        if (!response.ok) {
+            throw new Error(`No se pudo eliminar el caso (${response.status}).`);
+        }
+
+        await cargarCasosServidor();
+    } catch (error) {
+        console.error('No se pudo eliminar el caso.', error);
+        alert(error.message);
+    }
 }
 
 function renderizarListaCasos() {
     const container = document.getElementById('listaCasosContainer');
-    const casos = JSON.parse(localStorage.getItem('fincas_casos_guardados') || '[]');
 
-    if (casos.length === 0) {
+    if (casosGuardados.length === 0) {
         container.innerHTML = `<div class="p-3 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs text-slate-400">No hay casos guardados aún.</div>`;
         return;
     }
 
     container.innerHTML = '';
-    casos.forEach(c => {
+    casosGuardados.forEach(c => {
         const item = document.createElement('div');
         item.className = "p-2.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 cursor-pointer transition-all flex items-center justify-between group shadow-sm";
-        item.onclick = () => cargarCaso(c.id);
-        item.innerHTML = `
-            <div>
-                <h4 class="text-xs font-bold text-slate-800 group-hover:text-emerald-700">${c.nombre}</h4>
-                <span class="text-[9px] text-slate-400">${c.fecha}</span>
-            </div>
-            <button onclick="eliminarCaso(${c.id}, event)" class="text-slate-400 hover:text-rose-600 p-1" title="Eliminar">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            </button>
-        `;
+        item.addEventListener('click', () => cargarCaso(c.id));
+
+        const details = document.createElement('div');
+        const name = document.createElement('h4');
+        name.className = 'text-xs font-bold text-slate-800 group-hover:text-emerald-700';
+        name.textContent = c.nombre;
+        const date = document.createElement('span');
+        date.className = 'text-[9px] text-slate-400';
+        date.textContent = c.fecha;
+        details.append(name, date);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'text-slate-400 hover:text-rose-600 p-1';
+        deleteButton.title = 'Eliminar';
+        deleteButton.setAttribute('aria-label', `Eliminar caso ${c.nombre}`);
+        deleteButton.innerHTML = '<i data-lucide="trash-2" class="w-3.5 h-3.5"></i>';
+        deleteButton.addEventListener('click', event => eliminarCaso(c.id, event));
+
+        item.append(details, deleteButton);
         container.appendChild(item);
     });
     lucide.createIcons();
+}
+
+function setupTabs() {
+    const tablist = document.querySelector('[role="tablist"]');
+    const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+    const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
+
+    function activarPestana(tab, moverFoco = false) {
+        tabs.forEach((currentTab, index) => {
+            const activa = currentTab === tab;
+            currentTab.setAttribute('aria-selected', String(activa));
+            currentTab.tabIndex = activa ? 0 : -1;
+            currentTab.classList.toggle('bg-emerald-700', activa);
+            currentTab.classList.toggle('text-white', activa);
+            currentTab.classList.toggle('shadow-md', activa);
+            currentTab.classList.toggle('bg-white/70', !activa);
+            currentTab.classList.toggle('text-slate-600', !activa);
+            currentTab.classList.toggle('hover:bg-white', !activa);
+            currentTab.classList.toggle('hover:text-emerald-800', !activa);
+            panels[index].hidden = !activa;
+        });
+
+        if (moverFoco) tab.focus();
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => activarPestana(tab));
+    });
+
+    tablist.addEventListener('keydown', event => {
+        const selectedTab = event.target.closest('[role="tab"]');
+        const selectedIndex = tabs.indexOf(selectedTab);
+        if (selectedIndex < 0) return;
+
+        let nextIndex;
+        switch (event.key) {
+            case 'ArrowRight':
+                nextIndex = (selectedIndex + 1) % tabs.length;
+                break;
+            case 'ArrowLeft':
+                nextIndex = (selectedIndex - 1 + tabs.length) % tabs.length;
+                break;
+            case 'Home':
+                nextIndex = 0;
+                break;
+            case 'End':
+                nextIndex = tabs.length - 1;
+                break;
+            default:
+                return;
+        }
+
+        event.preventDefault();
+        activarPestana(tabs[nextIndex], true);
+    });
+}
+
+function setupIlustracionFinca() {
+    document.getElementById('material').addEventListener('change', actualizarIlustracionFinca);
+    document.getElementById('tipoCultivo').addEventListener('change', actualizarIlustracionFinca);
+    document.getElementById('sistemaRiego').addEventListener('change', actualizarIlustracionFinca);
+    document.getElementById('capacidadTanque').addEventListener('input', actualizarIlustracionFinca);
+    actualizarIlustracionFinca();
+}
+
+function actualizarIlustracionFinca() {
+    const material = document.getElementById('material');
+    const capacidadTanque = document.getElementById('capacidadTanque');
+    const cultivo = document.getElementById('tipoCultivo');
+    const sistemaRiego = document.getElementById('sistemaRiego');
+
+    const coloresTecho = {
+        '0.90': '#94a3b8',
+        '0.85': '#bae6fd',
+        '0.92': '#64748b'
+    };
+    const gruposCultivo = {
+        maiz: document.getElementById('cultivo-maiz'),
+        melon: document.getElementById('cultivo-melon'),
+        pasto: document.getElementById('cultivo-pasto'),
+        hortalizas: document.getElementById('cultivo-hortalizas')
+    };
+    const gruposRiego = {
+        '0.85': document.getElementById('riego-aspersion'),
+        '0.90': document.getElementById('riego-goteo'),
+        '0.75': document.getElementById('riego-gravedad')
+    };
+
+    const materialLabel = material.options[material.selectedIndex].textContent.trim();
+    const cultivoLabel = cultivo.options[cultivo.selectedIndex].textContent.trim();
+    const riegoLabel = sistemaRiego.options[sistemaRiego.selectedIndex].textContent.trim();
+    const capacidadLabel = capacidadTanque.value ? `${capacidadTanque.value} m³` : 'Sin definir';
+
+    document.getElementById('ilustracionTecho').setAttribute('fill', coloresTecho[material.value]);
+    document.getElementById('ilustracionMaterial').textContent = materialLabel;
+    document.getElementById('ilustracionCapacidad').textContent = capacidadLabel;
+    document.getElementById('ilustracionCultivo').textContent = cultivoLabel;
+    document.getElementById('ilustracionRiego').textContent = riegoLabel;
+    document.getElementById('ilustracionDescripcion').textContent = `Esquema de referencia: cubierta de ${materialLabel}, recoge el agua por la canaleta hacia un tanque de ${capacidadLabel}, para cultivar ${cultivoLabel} con ${riegoLabel}.`;
+
+    Object.entries(gruposCultivo).forEach(([valor, grupo]) => {
+        grupo.style.display = valor === cultivo.value ? 'inline' : 'none';
+    });
+    Object.entries(gruposRiego).forEach(([valor, grupo]) => {
+        grupo.style.display = valor === sistemaRiego.value ? 'inline' : 'none';
+    });
 }
 
 function setupToggles() {
@@ -355,7 +728,13 @@ function ejecutarCalculo() {
     }
 
     const tituloGrafico = document.getElementById('tituloGrafico');
-    tituloGrafico.innerHTML = `<i data-lucide="line-chart" class="text-emerald-700"></i> Proyección del Tanque (${res.anios} ${res.anios === 1 ? 'Año' : 'Años'}) - ${params.escenarioClima.toUpperCase()}`;
+    const nombresEscenario = {
+        tipico: 'Año típico',
+        seco: 'Año seco',
+        humedo: 'Año húmedo'
+    };
+    const nombreEscenario = nombresEscenario[params.escenarioClima] || 'Escenario seleccionado';
+    tituloGrafico.innerHTML = `<i data-lucide="line-chart" class="text-emerald-700"></i> Agua mes a mes · ${res.anios} ${res.anios === 1 ? 'año' : 'años'} · ${nombreEscenario}`;
     lucide.createIcons();
 
     renderGraficoMultilinea(res);
@@ -374,7 +753,7 @@ function renderGraficoMultilinea(res) {
             labels: res.labels,
             datasets: [
                 {
-                    label: 'Nivel del Tanque (L)',
+                    label: 'En el tanque al cierre',
                     data: res.nivelTanqueSerie,
                     borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -382,10 +761,11 @@ function renderGraficoMultilinea(res) {
                     fill: true,
                     tension: 0.3,
                     pointBackgroundColor: '#10b981',
+                    pointStyle: 'circle',
                     pointRadius: 4
                 },
                 {
-                    label: 'Captación Lluvia (L)',
+                    label: 'Recogida durante el mes',
                     data: res.captacionLluviaSerie,
                     borderColor: '#0284c7',
                     borderWidth: 2,
@@ -393,17 +773,19 @@ function renderGraficoMultilinea(res) {
                     fill: false,
                     tension: 0.2,
                     pointBackgroundColor: '#0284c7',
+                    pointStyle: 'rect',
                     pointRadius: 3
                 },
                 {
-                    label: 'Consumo Finca (L)',
+                    label: 'Usada durante el mes',
                     data: res.consumoFincaSerie,
                     borderColor: '#f43f5e',
                     borderWidth: 2,
-                    borderDash: [5, 5],
+                    borderDash: [2, 3],
                     fill: false,
                     tension: 0.2,
                     pointBackgroundColor: '#f43f5e',
+                    pointStyle: 'triangle',
                     pointRadius: 3
                 }
             ]
@@ -417,8 +799,15 @@ function renderGraficoMultilinea(res) {
                     position: 'bottom',
                     labels: {
                         usePointStyle: true,
-                        boxWidth: 20,
-                        font: { size: 11, weight: 'bold' }
+                        boxWidth: 12,
+                        padding: 16,
+                        font: { size: 12, weight: 'bold' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: items => items.length ? `Mes: ${items[0].label}` : '',
+                        label: context => `${context.dataset.label}: ${Number(context.parsed.y).toLocaleString('es-CR')} L`
                     }
                 }
             },
@@ -428,12 +817,25 @@ function renderGraficoMultilinea(res) {
                     grid: { color: 'rgba(226, 232, 240, 0.8)' },
                     title: {
                         display: true,
-                        text: 'Litros (L)',
-                        font: { size: 10, weight: 'bold' }
+                        text: 'Agua (litros)',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    ticks: {
+                        callback: value => Number(value).toLocaleString('es-CR')
                     }
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Mes',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    ticks: {
+                        maxTicksLimit: 12,
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
                 }
             }
         }

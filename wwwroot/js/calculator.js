@@ -53,20 +53,6 @@
     diasPorMes: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
     nombresMeses: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"],
 
-    coordenadasCantones: {
-        hojancha: { lat: 9.8311, lon: -85.4144 },
-        nicoya: { lat: 10.1444, lon: -85.4526 },
-        liberia: { lat: 10.6339, lon: -85.4378 },
-        santa_cruz: { lat: 10.2636, lon: -85.5851 },
-        bagaces: { lat: 10.5312, lon: -85.2539 },
-        carrillo: { lat: 10.4394, lon: -85.5489 },
-        canas: { lat: 10.4311, lon: -85.0983 },
-        abangares: { lat: 10.2794, lon: -84.9536 },
-        tilaran: { lat: 10.4633, lon: -84.9686 },
-        nandayure: { lat: 9.9825, lon: -85.3408 },
-        la_cruz: { lat: 11.0732, lon: -85.6322 }
-    },
-
     calcularVolumenUtilTecnico: function(p) {
         const hUtil = Math.max(0, p.profundidadTotal - p.bordeLibre - p.zonaMuerta);
         let volM3 = 0;
@@ -89,18 +75,90 @@
         };
     },
 
-    calcularCantonCercano: function(lat, lon) {
-        let cantonCercano = "nicoya";
-        let distanciaMinima = Infinity;
+    normalizarNombreDistrito: function(nombre) {
+        return nombre.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, '_');
+    },
 
-        for (const [key, coords] of Object.entries(this.coordenadasCantones)) {
-            const d = Math.hypot(coords.lat - lat, coords.lon - lon);
-            if (d < distanciaMinima) {
-                distanciaMinima = d;
-                cantonCercano = key;
+    puntoEnAnillo: function(punto, anillo) {
+        const [x, y] = punto;
+        let dentro = false;
+
+        for (let i = 0, j = anillo.length - 1; i < anillo.length; j = i++) {
+            const [x1, y1] = anillo[i];
+            const [x2, y2] = anillo[j];
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const productoCruzado = (x - x1) * dy - (y - y1) * dx;
+            const productoPunto = (x - x1) * dx + (y - y1) * dy;
+            const longitudCuadrada = dx * dx + dy * dy;
+
+            if (longitudCuadrada > 0
+                && Math.abs(productoCruzado) <= 1e-10
+                && productoPunto >= -1e-10
+                && productoPunto <= longitudCuadrada + 1e-10) {
+                return true;
+            }
+
+            if ((y1 > y) !== (y2 > y) && x < (dx * (y - y1)) / dy + x1) {
+                dentro = !dentro;
             }
         }
-        return cantonCercano;
+
+        return dentro;
+    },
+
+    puntoEnPoligono: function(punto, poligono) {
+        if (!poligono.length || !this.puntoEnAnillo(punto, poligono[0])) {
+            return false;
+        }
+
+        return !poligono.slice(1).some(anillo => this.puntoEnAnillo(punto, anillo));
+    },
+
+    puntoEnGeometria: function(punto, geometria) {
+        if (geometria.type === 'Polygon') {
+            return this.puntoEnPoligono(punto, geometria.coordinates);
+        }
+
+        if (geometria.type === 'MultiPolygon') {
+            return geometria.coordinates.some(poligono => this.puntoEnPoligono(punto, poligono));
+        }
+
+        return false;
+    },
+
+    encontrarUbicacionGPS: function(lat, lon, limites) {
+        if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            return null;
+        }
+
+        const punto = [lon, lat];
+        const cantonesEncontrados = Object.entries(limites.cantones)
+            .filter(([, geometria]) => this.puntoEnGeometria(punto, geometria));
+
+        if (cantonesEncontrados.length !== 1) {
+            return null;
+        }
+
+        const [canton] = cantonesEncontrados[0];
+        const distritosPermitidos = new Set((this.distritosPorCanton[canton] || [])
+            .map(nombre => this.normalizarNombreDistrito(nombre)));
+        const equivalenciasFuente = {
+            fortuna: 'la_fortuna',
+            juntas: 'las_juntas'
+        };
+        const distritosEncontrados = limites.districts.filter(distrito =>
+            distritosPermitidos.has(equivalenciasFuente[distrito.key] || distrito.key)
+            && this.puntoEnGeometria(punto, distrito.geometry));
+
+        return {
+            canton,
+            distrito: distritosEncontrados.length === 1
+                ? (equivalenciasFuente[distritosEncontrados[0].key] || distritosEncontrados[0].key)
+                : null
+        };
     },
 
     calcular: function(params) {
@@ -108,8 +166,9 @@
         if (params.escenarioClima === 'seco') factorClima = 0.75;
         if (params.escenarioClima === 'humedo') factorClima = 1.20;
 
-        const distKey = params.distrito || "nicoya";
-        const factorDistrito = this.factoresDistritosIMN[distKey] || 1.0;
+        const factorDistrito = params.distrito
+            ? (this.factoresDistritosIMN[params.distrito] ?? 1.0)
+            : 1.0;
 
         const perfilLluvia = this.precipitacionBase.map(mm => mm * factorClima * factorDistrito);
 
